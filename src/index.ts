@@ -54,5 +54,63 @@ function normalizeChildren(children: Child[]): MiniElement[] {
 /* ── M2 ─────────────────────────────────────────────────────────────── */
 
 export function render(element: MiniElement, container: Node): void {
-  throw new Error("M2: render is not implemented yet");
+  const dom = createDomNode(element);
+  container.appendChild(dom);
+}
+
+function createDomNode(element: MiniElement): Node {
+  if (element.type === TEXT_ELEMENT) {
+    return document.createTextNode((element.props.nodeValue as string) ?? "");
+  }
+
+  // creating a real dom node from the virtual element
+  const dom = document.createElement(element.type);
+
+  // setting the props on the dom node
+  for (const [name, value] of Object.entries(element.props)) {
+    if (
+      name === "children" ||
+      value === null ||
+      value === undefined ||
+      name === "nodeValue"
+    ) {
+      continue;
+    }
+    if (name.startsWith("on") && typeof value === "function") {
+      const eventType = name.slice(2).toLowerCase();
+      dom.addEventListener(eventType, value as EventListener);
+      continue;
+    }
+    if (name === "className") {
+      dom.setAttribute("class", String(value));
+      continue;
+    }
+    if (name.startsWith("aria-") || name.startsWith("data-")) {
+      dom.setAttribute(name, String(value));
+      continue;
+    }
+    if (value === null || typeof value === "boolean") {
+      continue;
+    }
+
+    // Ordinary props become DOM properties
+
+    (dom as unknown as Record<string, unknown>)[name] = value;
+  }
+
+  // render the children in order
+  const children = (element.props.children as MiniElement[]) ?? [];
+
+  for (const child of children) {
+    // false/null/undefined render nothing, but 0 must be preserved
+
+    if (child === null || child === undefined || typeof child === "boolean") {
+      continue;
+    }
+
+    const childDom = createDomNode(child);
+    dom.appendChild(childDom);
+  }
+
+  return dom;
 }
