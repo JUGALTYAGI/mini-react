@@ -16,12 +16,12 @@ export function createElement(
 ): MiniElement {
   const normalizedProps = {
     ...(props ?? {}),
-    children: noramlizedChildren(children),
+    children: normalizeChildren(children),
   };
   return { type, props: normalizedProps };
 }
 
-function noramlizedChildren(children: Child[]): MiniElement[] {
+function normalizeChildren(children: Child[]): MiniElement[] {
   const result: MiniElement[] = [];
 
   function append(child: Child): void {
@@ -37,7 +37,7 @@ function noramlizedChildren(children: Child[]): MiniElement[] {
 
     if (typeof child === "string" || typeof child === "number") {
       result.push({
-        type: "TEXT_ELEMENT",
+        type: TEXT_ELEMENT,
         props: { nodeValue: String(child), children: [] },
       });
       return;
