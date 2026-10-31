@@ -43,7 +43,7 @@ function normalizeChildren(children: Child[]): MiniElement[] {
       return;
     }
 
-    result.push(child as MiniElement);
+    result.push(child);
   }
 
   children.forEach(append);
@@ -89,9 +89,6 @@ function createDomNode(element: MiniElement): Node {
       dom.setAttribute(name, String(value));
       continue;
     }
-    if (value === null || typeof value === "boolean") {
-      continue;
-    }
 
     // Ordinary props become DOM properties
 
@@ -99,7 +96,7 @@ function createDomNode(element: MiniElement): Node {
   }
 
   // render the children in order
-  const children = (element.props.children as MiniElement[]) ?? [];
+  const children = element.props.children ?? [];
 
   for (const child of children) {
     // false/null/undefined render nothing, but 0 must be preserved
